@@ -6,20 +6,23 @@ import Data.Maybe (mapMaybe
                  , fromMaybe)
 import Control.Arrow (second)
 
+type NumSeats = Int
+type Seats p = [(p, NumSeats)]
+type PayoffFunction p = [p] -> p -> [(p, Float)]
+
 data Party = Kesk | Peruss | Kok | SDP deriving (Show, Eq)
-type Seats = Int
 type Portfolios = Int
 
-seats :: [(Party, Seats)]
+seats :: Seats Party
 seats = [(Kesk, 49)
        , (Peruss, 38)
        , (Kok, 37)
        , (SDP, 34)]
 
-seatsFor :: [(Party, Seats)] -> Party -> Seats
+seatsFor :: Seats Party -> Party -> NumSeats
 seatsFor ps p = fromMaybe 0 (lookup p ps)
 
-seatsTotal = 200 :: Seats
+seatsTotal = 200 :: NumSeats
 portfoliosTotal = 24 :: Portfolios
 
 division :: Int -> Int -> Float
@@ -27,10 +30,10 @@ division = (/) `on` fromIntegral
 
 shareOf = division
 
-seatsshares :: [(Party, Seats)] -> [(Party, Float)]
+seatsshares :: Seats Party -> [(Party, Float)]
 seatsshares = (`sharesOfTotal` seatsTotal)
 
-sharesOfTotal :: [(Party, Seats)] -> Seats -> [(Party, Float)]
+sharesOfTotal :: Seats Party -> NumSeats -> [(Party, Float)]
 sharesOfTotal ss total = map (second (`shareOf` total)) ss
 
 validcoalitions :: [(Party, Float)] -> [[Party]]
@@ -42,10 +45,10 @@ parties = map fst
 sharestotal :: [(Party, Float)] -> [Party] -> Float
 sharestotal ss ps = sum $ mapMaybe (`lookup` ss) ps
 
-portfolios :: [(Party, Seats)] -> [(Party, Portfolios)]
+portfolios :: Seats Party -> [(Party, Portfolios)]
 portfolios = (`splitPortfolios` portfoliosTotal)
 
-splitPortfolios :: [(Party, Seats)] -> Portfolios -> [(Party, Portfolios)]
+splitPortfolios :: Seats Party -> Portfolios -> [(Party, Portfolios)]
 splitPortfolios ss ps = zip (parties ss) (splitAmong ps (map snd ss))
 
 splitAmong :: Int -> [Int] -> [Int]
@@ -58,10 +61,10 @@ splitAmong n ss = splitAmong' n ss'
                                    r = round ((1 - s) * fromIntegral n) in
             k : splitAmong' (l - k) ss
 
-coalitionSeats :: [(Party, Seats)] -> [Party] -> [(Party, Seats)]
+coalitionSeats :: Seats Party -> [Party] -> Seats Party
 coalitionSeats ss = map (\p -> (p, seatsFor ss p))
 
-coalitionPortfolios :: [(Party, Seats)] -> [Party] -> [(Party, Portfolios)]
+coalitionPortfolios :: Seats Party -> [Party] -> [(Party, Portfolios)]
 coalitionPortfolios ss ps = portfolios $ coalitionSeats ss ps
 
 distance :: Party -> Party -> Float
