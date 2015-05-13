@@ -6,9 +6,16 @@ import Data.Maybe (mapMaybe
                  , fromMaybe)
 import Control.Arrow (second)
 
+import Hagl (Extensive)
+
 type NumSeats = Int
 type Seats p = [(p, NumSeats)]
 type PayoffFunction p = [p] -> p -> [(p, Float)]
+
+data CoalitionMoves = Propose | Accept | Decline
+
+buildCoalitionGame :: Seats p -> PayoffFunction p -> Extensive CoalitionMoves
+buildCoalitionGame = undefined
 
 data Party = Kesk | Peruss | Kok | SDP deriving (Show, Eq)
 type Portfolios = Int
