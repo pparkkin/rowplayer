@@ -1,12 +1,14 @@
 module Coalition where
 
 import Data.Function (on)
-import Data.List (subsequences)
+import Data.List (subsequences
+                , sortBy)
 import Data.Maybe (mapMaybe
                  , fromMaybe)
 import Control.Arrow (second)
 
-import Hagl (Extensive)
+import Hagl (Extensive
+           , pays)
 
 type NumSeats = Int
 type Seats p = [(p, NumSeats)]
@@ -15,7 +17,19 @@ type PayoffFunction p = [p] -> p -> [(p, Float)]
 data CoalitionMoves = Propose | Accept | Decline
 
 buildCoalitionGame :: Seats p -> PayoffFunction p -> Extensive CoalitionMoves
-buildCoalitionGame = undefined
+buildCoalitionGame ss pof = let
+    ps = map fst sorted
+    sorted = sortBy (compare `on` snd) ss
+        in buildGameTree ss pof ps
+
+inf :: Fractional a => a
+inf = 1/0
+
+buildGameTree :: Seats p -> PayoffFunction p -> [p] -> Extensive CoalitionMoves
+buildGameTree ss _ [] = pays $ replicate (length ss) (-inf)
+buildGameTree ss pof (p:ps) = let
+    fail = buildGameTree ss pof ps
+        in undefined
 
 data Party = Kesk | Peruss | Kok | SDP deriving (Show, Eq)
 type Portfolios = Int
