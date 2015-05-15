@@ -25,12 +25,34 @@ buildCoalitionGame ss pof = let
 inf :: Fractional a => a
 inf = 1/0
 
+seatTotal :: Seats p -> NumSeats
+seatTotal ss = sum (map snd ss)
+
+partySeats :: (Eq p) => Seats p -> p -> NumSeats
+partySeats ps p = fromMaybe 0 (lookup p ps)
+
+coalitionSeats :: (Eq p) => Seats p -> [p] -> NumSeats
+coalitionSeats ss ps = sum $ map (partySeats ss) ps
+
+shareOf :: Int -> Int -> Float
+shareOf = (/) `on` fromIntegral
+
+isMajority :: (Eq p) => Seats p -> [p] -> Bool
+isMajority ss ps = let
+    tot = seatTotal ss
+    cs = coalitionSeats ss ps
+        in cs `shareOf` tot > 0.5
+
+validCoalitions :: (Eq p) => Seats p -> [[p]]
+validCoalitions ss = [c | c <- subsequences (map fst ss), isMajority ss c]
+
 buildGameTree :: Seats p -> PayoffFunction p -> [p] -> Extensive CoalitionMoves
 buildGameTree ss _ [] = pays $ replicate (length ss) (-inf)
 buildGameTree ss pof (p:ps) = let
     fail = buildGameTree ss pof ps
         in undefined
 
+{-
 data Party = Kesk | Peruss | Kok | SDP deriving (Show, Eq)
 type Portfolios = Int
 
@@ -122,3 +144,4 @@ game :: [Party] -> IO ()
 game ps = do
     let cs = validcoalitions $ seatsshares seats
     mapM_ (turn cs) (reverse ps)
+-}
