@@ -16,7 +16,7 @@ type PayoffFunction p = [p] -> p -> [(p, Float)]
 
 data CoalitionMoves = Propose | Accept | Decline
 
-buildCoalitionGame :: Seats p -> PayoffFunction p -> Extensive CoalitionMoves
+buildCoalitionGame :: (Eq p) => Seats p -> PayoffFunction p -> Extensive CoalitionMoves
 buildCoalitionGame ss pof = let
     ps = map fst sorted
     sorted = sortBy (compare `on` snd) ss
@@ -46,10 +46,20 @@ isMajority ss ps = let
 validCoalitions :: (Eq p) => Seats p -> [[p]]
 validCoalitions ss = [c | c <- subsequences (map fst ss), isMajority ss c]
 
-buildGameTree :: Seats p -> PayoffFunction p -> [p] -> Extensive CoalitionMoves
+buildCoalitionTree :: Seats p
+                   -> p
+                   -> Extensive CoalitionMoves
+                   -> PayoffFunction p
+                   -> [p]
+                   -> Extensive CoalitionMoves
+buildCoalitionTree ss formateur failNode pof coalition = undefined
+
+buildGameTree :: (Eq p) => Seats p -> PayoffFunction p -> [p] -> Extensive CoalitionMoves
 buildGameTree ss _ [] = pays $ replicate (length ss) (-inf)
 buildGameTree ss pof (p:ps) = let
     fail = buildGameTree ss pof ps
+    coalitions = filter (p `elem`) (validCoalitions ss)
+    coalitionTrees = map (buildCoalitionTree ss p fail pof) coalitions
         in undefined
 
 {-
