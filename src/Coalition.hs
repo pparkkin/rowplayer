@@ -14,7 +14,8 @@ import Hagl (PlayerID
            , Extensive
            , pays
            , player
-           , (<|>))
+           , (<|>)
+           , decision)
 
 type NumSeats = Int
 type Seats p = [(p, NumSeats)]
@@ -88,7 +89,10 @@ buildGameTree ss pof (p:ps) = let
     fail = buildGameTree ss pof ps
     coalitions = filter (p `elem`) (validCoalitions ss)
     coalitionTrees = map (buildCoalitionTree ss p fail pof) coalitions
-        in undefined
+    edges = map (\s -> (Propose, s)) coalitionTrees
+        in case assignPlayerID ss p of
+            Just pid -> decision pid edges
+            Nothing -> fail
 
 {-
 data Party = Kesk | Peruss | Kok | SDP deriving (Show, Eq)
