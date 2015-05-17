@@ -6,7 +6,8 @@ import Data.List (subsequences
                 , delete
                 , elemIndex)
 import Data.Maybe (mapMaybe
-                 , fromMaybe)
+                 , fromMaybe
+                 , catMaybes)
 import Control.Arrow (second)
 
 import Hagl (PlayerID
@@ -54,10 +55,8 @@ isMajority ss ps = let
 validCoalitions :: (Eq p) => Seats p -> [[p]]
 validCoalitions ss = [c | c <- subsequences (map fst ss), isMajority ss c]
 
-assignPlayerID :: (Eq p) => Seats p -> p -> PlayerID
-assignPlayerID ss p = case elemIndex p (map fst ss) of
-    Just i -> i + 1
-    Nothing -> error $ "Unknown party" -- FIXME: There must be a better way to handle this
+assignPlayerID :: (Eq p) => Seats p -> p -> Maybe PlayerID
+assignPlayerID ss p = elemIndex p (map fst ss)
 
 buildCoalitionTree :: (Eq p)
                    => Seats p
@@ -70,7 +69,7 @@ buildCoalitionTree ss formateur fail pof coalition = let
     partners = delete formateur coalition
     payoffs = pof coalition formateur
     accept = pays $ map (partyPayoff payoffs) (map fst ss)
-    partnerIDs = map (assignPlayerID ss) partners
+    partnerIDs = catMaybes $ map (assignPlayerID ss) partners
         in undefined
 
 buildGameTree :: (Eq p) => Seats p -> PayoffFunction p -> [p] -> Extensive CoalitionMoves
