@@ -2,17 +2,22 @@ module Coalition where
 
 import Data.Function (on)
 import Data.List (subsequences
-                , sortBy)
+                , sortBy
+                , delete
+                , elemIndex)
 import Data.Maybe (mapMaybe
                  , fromMaybe)
 import Control.Arrow (second)
 
-import Hagl (Extensive
+import Hagl (PlayerID
+           , Extensive
            , pays)
 
 type NumSeats = Int
 type Seats p = [(p, NumSeats)]
-type PayoffFunction p = [p] -> p -> [(p, Float)]
+type Payoff = Float
+type Payoffs p = [(p, Payoff)]
+type PayoffFunction p = [p] -> p -> Payoffs p
 
 data CoalitionMoves = Propose | Accept | Decline
 
@@ -31,6 +36,9 @@ seatTotal ss = sum (map snd ss)
 partySeats :: (Eq p) => Seats p -> p -> NumSeats
 partySeats ps p = fromMaybe 0 (lookup p ps)
 
+partyPayoff :: (Eq p) => Payoffs p -> p -> Payoff
+partyPayoff ps p = fromMaybe 0 (lookup p ps)
+
 coalitionSeats :: (Eq p) => Seats p -> [p] -> NumSeats
 coalitionSeats ss ps = sum $ map (partySeats ss) ps
 
@@ -46,13 +54,24 @@ isMajority ss ps = let
 validCoalitions :: (Eq p) => Seats p -> [[p]]
 validCoalitions ss = [c | c <- subsequences (map fst ss), isMajority ss c]
 
-buildCoalitionTree :: Seats p
+assignPlayerID :: (Eq p) => Seats p -> p -> PlayerID
+assignPlayerID ss p = case elemIndex p (map fst ss) of
+    Just i -> i + 1
+    Nothing -> error $ "Unknown party" -- FIXME: There must be a better way to handle this
+
+buildCoalitionTree :: (Eq p)
+                   => Seats p
                    -> p
                    -> Extensive CoalitionMoves
                    -> PayoffFunction p
                    -> [p]
                    -> Extensive CoalitionMoves
-buildCoalitionTree ss formateur failNode pof coalition = undefined
+buildCoalitionTree ss formateur fail pof coalition = let
+    partners = delete formateur coalition
+    payoffs = pof coalition formateur
+    accept = pays $ map (partyPayoff payoffs) (map fst ss)
+    partnerIDs = map (assignPlayerID ss) partners
+        in undefined
 
 buildGameTree :: (Eq p) => Seats p -> PayoffFunction p -> [p] -> Extensive CoalitionMoves
 buildGameTree ss _ [] = pays $ replicate (length ss) (-inf)
