@@ -12,7 +12,9 @@ import Control.Arrow (second)
 
 import Hagl (PlayerID
            , Extensive
-           , pays)
+           , pays
+           , player
+           , (<|>))
 
 type NumSeats = Int
 type Seats p = [(p, NumSeats)]
@@ -58,6 +60,14 @@ validCoalitions ss = [c | c <- subsequences (map fst ss), isMajority ss c]
 assignPlayerID :: (Eq p) => Seats p -> p -> Maybe PlayerID
 assignPlayerID ss p = elemIndex p (map fst ss)
 
+buildAcceptChain :: Extensive CoalitionMoves
+                 -> Extensive CoalitionMoves
+                 -> [PlayerID]
+                 -> Extensive CoalitionMoves
+buildAcceptChain accept _ [] = accept
+buildAcceptChain accept fail (p:ps) = player p (Decline, fail)
+                                    <|> (Accept, buildAcceptChain accept fail ps)
+
 buildCoalitionTree :: (Eq p)
                    => Seats p
                    -> p
@@ -70,7 +80,7 @@ buildCoalitionTree ss formateur fail pof coalition = let
     payoffs = pof coalition formateur
     accept = pays $ map (partyPayoff payoffs) (map fst ss)
     partnerIDs = catMaybes $ map (assignPlayerID ss) partners
-        in undefined
+        in buildAcceptChain accept fail partnerIDs
 
 buildGameTree :: (Eq p) => Seats p -> PayoffFunction p -> [p] -> Extensive CoalitionMoves
 buildGameTree ss _ [] = pays $ replicate (length ss) (-inf)
