@@ -23,7 +23,7 @@ type Payoff = Float
 type Payoffs p = [(p, Payoff)]
 type PayoffFunction p = [p] -> p -> Payoffs p
 
-data CoalitionMoves = Propose | Accept | Decline
+data CoalitionMoves = Propose | Accept | Decline deriving (Eq, Show)
 
 buildCoalitionGame :: (Eq p) => Seats p -> PayoffFunction p -> Extensive CoalitionMoves
 buildCoalitionGame ss pof = let
