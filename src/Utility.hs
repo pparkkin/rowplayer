@@ -16,11 +16,10 @@ class (Bounded a, Enum a, Eq a) => OrdPref a where
     u :: a -> Int
     u c' = util 1 ord
         where
-            util n (c:cs) = if c == c'
-                then n
-                else if (i c (head cs))
-                    then util n cs
-                    else util (n + 1) cs
+            util n (c:cs)
+                | c == c' = n
+                | i c (head cs) = util n cs
+                | otherwise = util (n + 1) cs
 
 
 data Color = Red | Green | Blue | Yellow deriving (Show, Eq, Bounded, Enum)
