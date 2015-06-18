@@ -7,5 +7,6 @@ library
   default-language:    Haskell2010
   hs-source-dirs:      src
   exposed-modules:     Coalition
+                     , Utility
   build-depends:       base
                      , Hagl
