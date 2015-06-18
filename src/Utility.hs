@@ -1,6 +1,8 @@
 
 module Utility where
 
+import Data.List (sortBy)
+
 class (Bounded a, Enum a, Eq a) => OrdPref a where
     r :: a -> a -> Bool
     i :: a -> a -> Bool
@@ -8,11 +10,12 @@ class (Bounded a, Enum a, Eq a) => OrdPref a where
     p :: a -> a -> Bool
     p c d = r c d && not (r d c)
     ord :: [a]
-    ord = reverse $ sort [minBound ..]
+    ord = sortBy ord' [minBound ..]
         where
-            sort [] = []
-            sort (c:cs) = (sort (filter (not . (c `r`)) cs))
-                ++ [c] ++ (sort (filter (c `r`) cs))
+            ord' c d
+                | p c d == True = GT
+                | p d c == True = LT
+                | i c d == True = EQ
     u :: a -> Int
     u c' = util 1 ord
         where
