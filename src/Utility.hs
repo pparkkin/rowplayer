@@ -5,6 +5,7 @@ import Data.List (sortBy)
 
 class (Bounded a, Enum a, Eq a) => OrdPref a where
     r :: a -> a -> Bool
+    r c d = u c >= u d
     i :: a -> a -> Bool
     i c d = r c d && r d c
     p :: a -> a -> Bool
@@ -73,11 +74,6 @@ data Pop = ClassicCoke
          deriving (Show, Eq, Bounded, Enum)
 
 instance OrdPref Pop where
-    r ClassicCoke _ = True
-    r _ ClassicCoke = False
-    r _ Sprite = True
-    r Sprite _ = False
-
     u ClassicCoke = 1
     u DietCoke = 0.4
     u Sprite = 0
@@ -113,11 +109,6 @@ data VietnameseOutcome =
   deriving (Show, Eq, Bounded, Enum)
 
 instance OrdPref VietnameseOutcome where
-    r QuickAgreement _ = True
-    r _ QuickAgreement = False
-    r _ WarContinues = True
-    r WarContinues _ = False
-
     u QuickAgreement = 1
     u AdditionalConcessions = 0.3
     u WarContinues = 0
