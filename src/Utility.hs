@@ -1,11 +1,19 @@
+{-# LANGUAGE GADTs #-}
 
 module Utility where
 
 import Data.List (sortBy)
 
+data PrefFun a where
+    R :: (a -> a -> Bool) -> PrefFun a
+    U :: (a -> Float) -> PrefFun a
+
 class (Bounded a, Enum a, Eq a) => OrdPref a where
+    pf :: PrefFun a
     r :: a -> a -> Bool
-    r c d = u c >= u d
+    r c d = case pf of
+        R f -> f c d
+        U f -> f c >= f d
     i :: a -> a -> Bool
     i c d = r c d && r d c
     p :: a -> a -> Bool
@@ -18,23 +26,26 @@ class (Bounded a, Enum a, Eq a) => OrdPref a where
                 | p d c == True = LT
                 | i c d == True = EQ
     u :: a -> Float
-    u c' = util 1 ord
-        where
-            util n (c:cs)
-                | c == c' = n
-                | i c (head cs) = util n cs
-                | otherwise = util (n + 1) cs
-
+    u c' = case pf of
+        U f -> f c'
+        R f -> util 1 ord
+            where
+                util n (c:cs)
+                    | c == c' = n
+                    | i c (head cs) = util n cs
+                    | otherwise = util (n + 1) cs
 
 data Color = Red | Green | Blue | Yellow deriving (Show, Eq, Bounded, Enum)
+cOrd :: Color -> Color -> Bool
+cOrd Yellow _ = True
+cOrd _ Yellow = False
+cOrd Blue _ = False
+cOrd Red Green = True
+cOrd Green Red = True
+cOrd _ _ = True
 
 instance OrdPref Color where
-    r Yellow _ = True
-    r _ Yellow = False
-    r Blue _ = False
-    r Red Green = True
-    r Green Red = True
-    r _ _ = True
+    pf = R cOrd
 
 data OrdPref c => Decision s a c = Decision {
     states :: [(s, Float)]
@@ -72,11 +83,13 @@ data Pop = ClassicCoke
          | DietCoke
          | Sprite
          deriving (Show, Eq, Bounded, Enum)
+pOrd :: Pop -> Float
+pOrd ClassicCoke = 1
+pOrd DietCoke = 0.4
+pOrd Sprite = 0
 
 instance OrdPref Pop where
-    u ClassicCoke = 1
-    u DietCoke = 0.4
-    u Sprite = 0
+    pf = U pOrd
 
 pStates = [
     ((ClassicCoke, DietCoke, ClassicCoke), 0.15)
@@ -107,11 +120,13 @@ data VietnameseOutcome =
   | AdditionalConcessions
   | WarContinues
   deriving (Show, Eq, Bounded, Enum)
+vOrd :: VietnameseOutcome -> Float
+vOrd QuickAgreement = 1
+vOrd AdditionalConcessions = 0.3
+vOrd WarContinues = 0
 
 instance OrdPref VietnameseOutcome where
-    u QuickAgreement = 1
-    u AdditionalConcessions = 0.3
-    u WarContinues = 0
+    pf = U vOrd
 
 vOutcome "Vietnamese Bluff" "Bomb" = QuickAgreement
 vOutcome "Vietnamese Bluff" "Do Not Bomb" = AdditionalConcessions
