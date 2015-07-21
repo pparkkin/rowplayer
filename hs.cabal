@@ -10,3 +10,5 @@ library
                      , Utility
   build-depends:       base
                      , Hagl
+                     , Hagl-more
+                     , graphviz
