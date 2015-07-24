@@ -16,6 +16,7 @@ import Hagl (PlayerID
            , player
            , (<|>)
            , decision)
+import Hagl.More.Vis
 
 type NumSeats = Int
 type Seats p = [(p, NumSeats)]
@@ -128,5 +129,7 @@ payoffs c f = map (\p -> (p, payoff f p)) c
         payoff f p = distance f p * (-1)
 
 -- In REPL
--- > buildGameTree seats payoffs (map fst seats)
+-- > import Hagl.More.Vis
+-- > import Data.GraphViz.Commands
+-- > runGraphviz (extensiveToDot (buildGameTree seats payoffs (map fst seats))) Png "test.png"
 
