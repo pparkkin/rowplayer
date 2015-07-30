@@ -42,7 +42,7 @@ partySeats :: (Eq p) => Seats p -> p -> NumSeats
 partySeats ps p = fromMaybe 0 (lookup p ps)
 
 partyPayoff :: (Eq p) => Payoffs p -> p -> Payoff
-partyPayoff ps p = fromMaybe 0 (lookup p ps)
+partyPayoff ps p = fromMaybe (-inf) (lookup p ps)
 
 coalitionSeats :: (Eq p) => Seats p -> [p] -> NumSeats
 coalitionSeats ss ps = sum $ map (partySeats ss) ps
@@ -106,22 +106,19 @@ seats = [(Kesk, 49)
        , (SDP, 34)]
 
 distance :: Party -> Party -> Float
-distance p r = distance' p r / 4
-
-distance' :: Party -> Party -> Float
-distance' Kesk Peruss = 21.14
-distance' Kesk Kok = 13.34
-distance' Kesk SDP = 15.33
-distance' Peruss Kesk = 21.14
-distance' Peruss Kok = 26.55
-distance' Peruss SDP = 26.82
-distance' Kok Kesk = 13.34
-distance' Kok Peruss = 26.55
-distance' Kok SDP = 13.96
-distance' SDP Kesk = 15.33
-distance' SDP Peruss = 26.82
-distance' SDP Kok = 13.96
-distance' _ _ = 0
+distance Kesk Peruss = 21.14
+distance Kesk Kok = 13.34
+distance Kesk SDP = 15.33
+distance Peruss Kesk = 21.14
+distance Peruss Kok = 26.55
+distance Peruss SDP = 26.82
+distance Kok Kesk = 13.34
+distance Kok Peruss = 26.55
+distance Kok SDP = 13.96
+distance SDP Kesk = 15.33
+distance SDP Peruss = 26.82
+distance SDP Kok = 13.96
+distance _ _ = 0
 
 payoffs :: [Party] -> Party -> [(Party, Float)]
 payoffs c f = map (\p -> (p, payoff f p)) c
